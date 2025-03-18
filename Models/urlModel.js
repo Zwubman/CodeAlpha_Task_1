@@ -1,9 +1,14 @@
 import mongoose from "mongoose";
+import { type } from "os";
 
 const UrlsSchema = new mongoose.Schema({
   shortId: {
     type: String,
     required: true,
+    unique: true,
+  },
+  shortUrl:{
+    type: String,
     unique: true,
   },
   originalUrl: {
