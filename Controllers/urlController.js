@@ -42,6 +42,48 @@ export const shortenUrl = async (req, res) => {
   }
 };
 
+export const userCustomUrl = async (req, res) => {
+  try {
+    const { originalUrl, customUrl } = req.body;
+
+    // Validate the provided original URL
+    if (!originalUrl || !validUrl.isUri(originalUrl)) {
+      return res.status(400).json({ message: "Invalid original URL" });
+    }
+
+    // Validate the custom URL (must be alphanumeric and not empty)
+    if (!customUrl || !/^[a-zA-Z0-9_-]+$/.test(customUrl)) {
+      return res.status(400).json({ message: "Invalid custom URL" });
+    }
+
+    // Parse the original URL to extract the domain extension
+    const parsedUrl = new URL(originalUrl);
+    const hostname = parsedUrl.hostname.replace("www.", ""); // Remove "www." if exists
+    const domainExtension = hostname.split(".").slice(-1)[0]; // Get the last part of the domain (e.g., "com" or "org")
+
+    const editedUrl = `${customUrl}.${domainExtension}`;
+    // Construct the custom shortened URL with the appropriate domain extension
+    const shortUrl = `http://${editedUrl}`;
+
+    // Check if the custom URL already exists in the database
+    const existingCustomUrl = await Url.findOne({ shortId: editedUrl });
+    if (existingCustomUrl) {
+      return res.status(400).json({ message: "Custom URL already taken" });
+    }
+
+    // Create a new URL entry with the custom short URL
+    const newUrl = new Url({ shortId: editedUrl, originalUrl });
+    await newUrl.save();
+
+    // Return the custom shortened URL to the client
+    res.status(201).json({ shortUrl });
+  } catch (error) {
+    console.error("Error creating custom URL:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
 //function use the short url to access the original url
 export const redirectToOriginalUrl = async (req, res) => {
   try {
