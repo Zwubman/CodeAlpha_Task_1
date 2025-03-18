@@ -3,14 +3,20 @@ import Url from "../Models/urlModel.js";
 import { nanoid } from "nanoid";
 import validUrl from "valid-url";
 
+
+// Function to shorten a given URL
 export const shortenUrl = async (req, res) => {
   try {
     const { originalUrl } = req.body;
 
+
+    // Validate the provided URL
     if (!originalUrl || !validUrl.isUri(originalUrl)) {
       return res.status(400).json({ message: "Invalid original URL" });
     }
 
+
+    // Check if the URL already exists in the database
     const existingUrl = await Url.findOne({ originalUrl });
     if (existingUrl) {
       return res.status(200).json({
@@ -18,10 +24,16 @@ export const shortenUrl = async (req, res) => {
       });
     }
 
+
+    // Generate a unique 6-character short ID
     const shortId = nanoid(6);
+
+    // Create a new URL entry in the database
     const newUrl = new Url({ shortId, originalUrl });
     await newUrl.save();
 
+
+    // Return the shortened URL to the client
     res.status(201).json({
       shortUrl: `${req.protocol}://${req.get("host")}/${shortId}`,
     });
