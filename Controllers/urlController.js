@@ -21,8 +21,9 @@ export const shortenUrl = async (req, res) => {
     }
 
     // Generate a unique short ID
-    const shortId = nanoid(6);
+    const shortId = nanoid(6); 
 
+    
     const newUrl = new Url({ shortId, originalUrl });
     await newUrl.save();
 
@@ -57,6 +58,7 @@ export const userCustomUrl = async (req, res) => {
     // create the custom url
     const shortId = customUrl;
 
+    
     const newUrl = new Url({ shortId, originalUrl });
     await newUrl.save();
 
